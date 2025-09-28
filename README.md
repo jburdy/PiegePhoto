@@ -73,7 +73,7 @@ PiegePhoto/
 ## 🎯 Fonctionnalités
 
 ### Analyse automatique
-- **Détection d'animaux** avec MLX optimisé pour MacBook M4 (personnes, chats, chiens, chevaux, moutons, vaches, ours, oiseaux, etc.)
+- **Détection d'animaux** avec MLX optimisé pour MacBook M4 (renards, cerfs, chevreuils, sangliers, chats, chiens, moutons, vaches, oiseaux, etc.)
 - **Traitement par lots** ultra-rapide de centaines de vidéos
 - **Extraction intelligente** de frames représentatives
 - **Filtrage par confiance** (seuil configurable)
@@ -117,9 +117,10 @@ Modifiez le dictionnaire `target_classes` dans `mlx_detector.py` :
 ```python
 self.target_classes = {
     0: 'person', 14: 'bird', 15: 'cat', 16: 'dog', 17: 'horse',
-    18: 'sheep', 19: 'cow', 20: 'elephant', 21: 'bear',
-    # Ajoutez vos espèces ici
-    99: 'cerf', 100: 'sanglier'
+    18: 'sheep', 19: 'cow', 20: 'fox', 21: 'deer', 22: 'roe_deer',
+    23: 'wild_boar', 24: 'squirrel', 25: 'rabbit', 26: 'hedgehog', 27: 'badger',
+    # Ajoutez vos espèces spécifiques ici
+    99: 'lynx', 100: 'chamois', 101: 'marmotte'
 }
 ```
 

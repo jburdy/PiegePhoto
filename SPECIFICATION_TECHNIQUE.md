@@ -45,20 +45,24 @@
 - **Détection** : Identification des animaux avec coordonnées de bounding box
 - **Sortie** : Résultats JSON avec métadonnées complètes
 
-#### 1.2 Espèces supportées
+#### 1.2 Espèces supportées (Forêt du Jura)
 ```python
 wildlife_classes = {
     0: 'person',      # Personnes
-    14: 'bird',       # Oiseaux
-    15: 'cat',        # Chats
-    16: 'dog',        # Chiens
-    17: 'horse',      # Chevaux
-    18: 'sheep',      # Moutons
-    19: 'cow',        # Vaches
-    20: 'elephant',   # Éléphants
-    21: 'bear',       # Ours
-    22: 'zebra',      # Zèbres
-    23: 'giraffe'     # Girafes
+    14: 'bird',       # Oiseaux (pies, corbeaux, mésanges, etc.)
+    15: 'cat',        # Chats domestiques et sauvages
+    16: 'dog',        # Chiens domestiques et errants
+    17: 'horse',      # Chevaux (rare mais possible)
+    18: 'sheep',      # Moutons (pâturages)
+    19: 'cow',        # Vaches (pâturages)
+    20: 'fox',        # Renards
+    21: 'deer',       # Cerfs et biches
+    22: 'roe_deer',   # Chevreuils
+    23: 'wild_boar',  # Sangliers
+    24: 'squirrel',   # Écureuils
+    25: 'rabbit',     # Lapins et lièvres
+    26: 'hedgehog',   # Hérissons
+    27: 'badger'      # Blaireaux
 }
 ```
 
@@ -472,11 +476,13 @@ class FastMLXDetector:
 
 #### 3.2 Espèces personnalisées
 ```python
-# Ajouter de nouvelles espèces
+# Ajouter de nouvelles espèces spécifiques au Jura
 self.target_classes = {
     0: 'person', 14: 'bird', 15: 'cat', 16: 'dog',
-    17: 'horse', 18: 'sheep', 19: 'cow', 20: 'elephant',
-    21: 'bear', 99: 'cerf', 100: 'sanglier'  # Nouvelles espèces
+    17: 'horse', 18: 'sheep', 19: 'cow', 20: 'fox',
+    21: 'deer', 22: 'roe_deer', 23: 'wild_boar', 24: 'squirrel',
+    25: 'rabbit', 26: 'hedgehog', 27: 'badger',
+    99: 'lynx', 100: 'chamois', 101: 'marmotte'  # Espèces alpines
 }
 ```
 
@@ -983,7 +989,7 @@ def profile_analysis():
 ### 3. FAQ technique
 
 #### Q: Comment ajouter de nouvelles espèces d'animaux ?
-R: Modifiez le dictionnaire `target_classes` dans `mlx_detector.py` et ajoutez vos espèces avec des IDs uniques.
+R: Modifiez le dictionnaire `target_classes` dans `mlx_detector.py` et ajoutez vos espèces avec des IDs uniques. Le système est déjà configuré pour la faune du Jura (renards, cerfs, chevreuils, sangliers, etc.).
 
 #### Q: Comment optimiser les performances sur un MacBook M4 ?
 R: Utilisez le mode "fast", assurez-vous que MLX utilise le GPU, et traitez les vidéos par petits lots.

@@ -19,10 +19,23 @@ class MLXAnimalDetector:
         self.device = mx.default_device()
         logger.info(f"Initialisation du détecteur MLX sur {self.device}")
         
-        # Classes d'animaux pertinentes pour un piège photo
+        # Classes d'animaux pertinentes pour la forêt du Jura
         self.wildlife_classes = {
-            0: 'person', 14: 'bird', 15: 'cat', 16: 'dog', 17: 'horse', 
-            18: 'sheep', 19: 'cow', 20: 'elephant', 21: 'bear', 22: 'zebra', 23: 'giraffe'
+            0: 'person',      # Personnes
+            14: 'bird',       # Oiseaux (pies, corbeaux, mésanges, etc.)
+            15: 'cat',        # Chats domestiques et sauvages
+            16: 'dog',        # Chiens domestiques et errants
+            17: 'horse',      # Chevaux (rare mais possible)
+            18: 'sheep',      # Moutons (pâturages)
+            19: 'cow',        # Vaches (pâturages)
+            20: 'fox',        # Renards
+            21: 'deer',       # Cerfs et biches
+            22: 'roe_deer',   # Chevreuils
+            23: 'wild_boar',  # Sangliers
+            24: 'squirrel',   # Écureuils
+            25: 'rabbit',     # Lapins et lièvres
+            26: 'hedgehog',   # Hérissons
+            27: 'badger'      # Blaireaux
         }
         
         # Initialiser un modèle simple de détection basé sur MLX
@@ -127,10 +140,23 @@ class FastMLXDetector:
         self.device = mx.default_device()
         logger.info(f"Détecteur rapide MLX initialisé sur {self.device}")
         
-        # Classes d'animaux simplifiées
+        # Classes d'animaux simplifiées pour la forêt du Jura
         self.target_classes = {
-            0: 'person', 14: 'bird', 15: 'cat', 16: 'dog', 17: 'horse',
-            18: 'sheep', 19: 'cow', 20: 'elephant', 21: 'bear'
+            0: 'person',      # Personnes
+            14: 'bird',       # Oiseaux
+            15: 'cat',        # Chats
+            16: 'dog',        # Chiens
+            17: 'horse',      # Chevaux
+            18: 'sheep',      # Moutons
+            19: 'cow',        # Vaches
+            20: 'fox',        # Renards
+            21: 'deer',       # Cerfs/biches
+            22: 'roe_deer',   # Chevreuils
+            23: 'wild_boar',  # Sangliers
+            24: 'squirrel',   # Écureuils
+            25: 'rabbit',    # Lapins/lièvres
+            26: 'hedgehog',   # Hérissons
+            27: 'badger'      # Blaireaux
         }
         
         # Paramètres optimisés pour la vitesse
