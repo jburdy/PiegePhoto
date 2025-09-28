@@ -90,29 +90,6 @@ def api_video_info(filename):
 
 # La route /stream/<filename> est gérée par VideoStreamer
 
-@app.route('/video/<filename>')
-def video_file(filename):
-    """Sert le fichier vidéo directement pour ouverture avec le player de l'OS"""
-    video_info = web_interface.get_video_info(filename)
-    if not video_info:
-        return jsonify({"error": "Vidéo non trouvée"}), 404
-    
-    # Chercher le fichier vidéo dans le dossier approprié
-    video_path = None
-    if web_interface.video_dir and os.path.exists(web_interface.video_dir):
-        video_path = os.path.join(web_interface.video_dir, filename)
-    else:
-        # Chercher dans les dossiers par défaut
-        for search_dir in ['videos', 'data', '.']:
-            potential_path = os.path.join(search_dir, filename)
-            if os.path.exists(potential_path):
-                video_path = potential_path
-                break
-    
-    if not video_path or not os.path.exists(video_path):
-        return jsonify({"error": "Fichier vidéo non trouvé"}), 404
-    
-    return send_file(video_path, as_attachment=False, mimetype='video/mp4')
 
 @app.route('/api/search')
 def api_search():
@@ -225,17 +202,6 @@ def create_templates():
             margin-bottom: 15px;
             flex-wrap: wrap;
             align-items: center;
-        }
-        .search-bar {
-            flex: 1;
-            min-width: 200px;
-        }
-        .search-bar input {
-            width: 100%;
-            padding: 8px 12px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            font-size: 14px;
         }
         .filter-bar {
             display: flex;
@@ -362,42 +328,12 @@ def create_templates():
         }
         .video-thumbnail img {
             width: 100%;
-            height: 80px;
-            object-fit: cover;
+            height: auto;
+            object-fit: contain;
             transition: transform 0.2s;
         }
         .video-thumbnail:hover img {
             transform: scale(1.05);
-        }
-        .detections {
-            padding: 12px;
-        }
-        .detection-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 6px 0;
-            border-bottom: 1px solid #eee;
-            font-size: 12px;
-        }
-        .detection-item:last-child {
-            border-bottom: none;
-        }
-        .animal-type {
-            font-weight: bold;
-            color: #667eea;
-        }
-        .confidence {
-            font-size: 11px;
-            color: #666;
-        }
-        .time-badge {
-            background: #e3f2fd;
-            color: #1976d2;
-            padding: 2px 6px;
-            border-radius: 10px;
-            font-size: 10px;
-            margin-left: 5px;
         }
         .no-data {
             text-align: center;
@@ -423,32 +359,15 @@ def create_templates():
             color: white;
             border-color: #667eea;
         }
-        .video-actions {
-            margin-top: 15px;
-            padding-top: 15px;
-            border-top: 1px solid #eee;
-        }
-        .watch-btn {
-            display: inline-block;
-            padding: 8px 16px;
-            background: #667eea;
-            color: white;
-            text-decoration: none;
-            border-radius: 6px;
-            font-size: 0.9em;
-            transition: background 0.2s;
-        }
-        .watch-btn:hover {
-            background: #5a6fd8;
-            color: white;
-            text-decoration: none;
-        }
         .video-thumbnail {
             margin: 10px 0;
             border-radius: 4px;
             overflow: hidden;
         }
         .video-thumbnail img {
+            width: 100%;
+            height: auto;
+            object-fit: contain;
             transition: transform 0.2s;
         }
         .video-thumbnail:hover img {
@@ -485,10 +404,6 @@ def create_templates():
         
         <div class="content">
             <div class="controls">
-                <div class="search-bar">
-                    <input type="text" id="searchInput" placeholder="🔍 Rechercher une vidéo...">
-                </div>
-                
                 <div class="filter-bar">
                     <div class="filter-btn active" data-animal="">Tous</div>
                     {% for animal, count in data.animal_counts.items() %}
@@ -516,7 +431,7 @@ def create_templates():
             <div class="video-grid" id="videoGrid">
                 {% for video in data.all_results %}
                 {% if video.detection_count > 0 %}
-                <div class="video-card" data-filename="{{ video.filename }}" data-timestamp="{{ video.analyzed_at }}">
+                <div class="video-card" data-filename="{{ video.filename }}" data-timestamp="{{ video.analyzed_at }}" data-video-data="{{ video | tojson }}">
                     <div class="video-header">
                         <div class="video-name">{{ video.filename }}</div>
                         <div class="video-stats">
@@ -525,23 +440,6 @@ def create_templates():
                         <div class="video-thumbnail">
                             <img src="/thumbnail/{{ video.filename }}" alt="Miniature">
                         </div>
-                    </div>
-                    <div class="detections">
-                        {% for detection in video.detections[:4] %}
-                        <div class="detection-item">
-                            <span class="animal-type">{{ detection.class }}</span>
-                            <span class="time-badge">{{ "%.1f"|format(detection.frame_time) }}s</span>
-                            <span class="confidence">{{ "%.0f"|format(detection.confidence * 100) }}%</span>
-                        </div>
-                        {% endfor %}
-                        <div class="video-actions">
-                            <a href="/video_player/{{ video.filename }}" class="watch-btn">📹 Regarder</a>
-                        </div>
-                        {% if video.detections|length > 4 %}
-                        <div class="detection-item">
-                            <span style="color: #666; font-size: 11px;">... et {{ video.detections|length - 4 }} autres</span>
-                        </div>
-                        {% endif %}
                     </div>
                 </div>
                 {% endif %}
@@ -574,23 +472,8 @@ def create_templates():
             setupEventListeners();
         });
         
-        // Recherche en temps réel
+        // Filtres par animal
         function setupEventListeners() {
-            document.getElementById('searchInput').addEventListener('input', function(e) {
-                const query = e.target.value.toLowerCase();
-                const cards = document.querySelectorAll('.video-card');
-                
-                cards.forEach(card => {
-                    const filename = card.dataset.filename.toLowerCase();
-                    if (filename.includes(query)) {
-                        card.style.display = 'block';
-                    } else {
-                        card.style.display = 'none';
-                    }
-                });
-            });
-            
-            // Filtres par animal
             document.querySelectorAll('.filter-btn').forEach(btn => {
                 btn.addEventListener('click', function() {
                     // Mettre à jour les boutons actifs
@@ -604,15 +487,17 @@ def create_templates():
                         // Afficher tous
                         cards.forEach(card => card.style.display = 'block');
                     } else {
-                        // Filtrer par animal
+                        // Filtrer par animal - maintenant basé sur les données stockées
                         cards.forEach(card => {
-                            const detections = card.querySelectorAll('.animal-type');
+                            const videoData = JSON.parse(card.dataset.videoData || '{}');
                             let hasAnimal = false;
-                            detections.forEach(det => {
-                                if (det.textContent === animal) {
-                                    hasAnimal = true;
-                                }
-                            });
+                            if (videoData.detections) {
+                                videoData.detections.forEach(detection => {
+                                    if (detection.class === animal) {
+                                        hasAnimal = true;
+                                    }
+                                });
+                            }
                             card.style.display = hasAnimal ? 'block' : 'none';
                         });
                     }
