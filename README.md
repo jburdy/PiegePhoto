@@ -57,6 +57,7 @@ PiegePhoto/
 ├── mlx_detector.py        # Détecteur optimisé pour MacBook M4
 ├── report_generator.py    # Générateur de rapports
 ├── web_interface.py       # Interface web Flask
+├── video_streamer.py      # Serveur de streaming vidéo
 ├── run_analysis.py        # Script principal tout-en-un
 ├── requirements.txt       # Dépendances Python (MLX)
 ├── README.md             # Ce fichier
@@ -65,6 +66,7 @@ PiegePhoto/
 ├── rapport_piege_photo.txt # Rapport détaillé (généré)
 └── templates/            # Templates HTML (généré)
     ├── index.html
+    ├── video_player.html
     └── error.html
 ```
 
@@ -88,6 +90,10 @@ PiegePhoto/
 - **Recherche** dans les vidéos
 - **Filtrage** par type d'animal
 - **Visualisation** des détections par vidéo
+- **Lecteur vidéo intégré** avec overlay des détections
+- **Navigation intelligente** entre les détections
+- **Miniatures automatiques** des vidéos
+- **Streaming optimisé** avec support des range requests
 - **Design responsive** et minimaliste
 
 ## ⚙️ Configuration
@@ -146,7 +152,11 @@ Généré le: 15/12/2024 14:30
 
 ### Interface web
 - Dashboard avec cartes statistiques
-- Grille des vidéos avec détections
+- Grille des vidéos avec miniatures et détections
+- **Lecteur vidéo intégré** avec overlay des détections
+- **Navigation intelligente** : saut automatique entre détections
+- **Timeline interactive** avec marqueurs de détections
+- **Streaming optimisé** pour lecture fluide
 - Filtres par animal
 - Recherche en temps réel
 
@@ -161,6 +171,11 @@ python -c "from transformers import AutoModelForObjectDetection; AutoModelForObj
 
 ### Vidéos non trouvées dans l'interface web
 Placez vos vidéos dans le dossier `videos/` ou `data/` à la racine du projet.
+
+### Problèmes de lecture vidéo
+- Assurez-vous que vos vidéos sont dans un format supporté (MP4 recommandé)
+- Le serveur utilise le streaming avec range requests pour une lecture optimale
+- Les miniatures sont générées automatiquement au milieu de chaque vidéo
 
 ### Performance lente
 - Utilisez le mode `fast` au lieu de `accurate`
