@@ -61,8 +61,7 @@ class WebInterface:
 # Instance globale
 web_interface = WebInterface()
 
-# Initialiser le streamer vidéo
-video_streamer = VideoStreamer(app)
+# Le streamer vidéo sera initialisé dans main() avec le bon dossier vidéo
 
 @app.route('/')
 def index():
@@ -89,39 +88,31 @@ def api_video_info(filename):
     
     return jsonify(video_info)
 
-@app.route('/video/<filename>')
-def serve_video(filename):
-    """Sert une vidéo spécifique"""
-    # Chercher le fichier vidéo dans le dossier des vidéos
-    video_paths = []
-    
-    # Ajouter le dossier vidéo spécifique si défini
-    if web_interface.video_dir:
-        video_paths.append(os.path.join(web_interface.video_dir, filename))
-    
-    # Ajouter les chemins par défaut
-    video_paths.extend([
-        f"videos/{filename}",
-        f"data/{filename}",
-        filename
-    ])
-    
-    for path in video_paths:
-        if os.path.exists(path):
-            return send_file(path, mimetype='video/mp4')
-    
-    return f"Vidéo non trouvée: {filename}", 404
+# La route /stream/<filename> est gérée par VideoStreamer
 
-@app.route('/video_player/<filename>')
-def video_player(filename):
-    """Page de lecteur vidéo avec détections"""
+@app.route('/video/<filename>')
+def video_file(filename):
+    """Sert le fichier vidéo directement pour ouverture avec le player de l'OS"""
     video_info = web_interface.get_video_info(filename)
     if not video_info:
-        return render_template('error.html', message="Vidéo non trouvée")
+        return jsonify({"error": "Vidéo non trouvée"}), 404
     
-    return render_template('video_player.html', 
-                         video_info=video_info, 
-                         filename=filename)
+    # Chercher le fichier vidéo dans le dossier approprié
+    video_path = None
+    if web_interface.video_dir and os.path.exists(web_interface.video_dir):
+        video_path = os.path.join(web_interface.video_dir, filename)
+    else:
+        # Chercher dans les dossiers par défaut
+        for search_dir in ['videos', 'data', '.']:
+            potential_path = os.path.join(search_dir, filename)
+            if os.path.exists(potential_path):
+                video_path = potential_path
+                break
+    
+    if not video_path or not os.path.exists(video_path):
+        return jsonify({"error": "Fichier vidéo non trouvé"}), 404
+    
+    return send_file(video_path, as_attachment=False, mimetype='video/mp4')
 
 @app.route('/api/search')
 def api_search():
@@ -774,392 +765,6 @@ def create_templates():
     
     with open(templates_dir / "error.html", 'w', encoding='utf-8') as f:
         f.write(error_html)
-    
-    # Template du lecteur vidéo amélioré
-    video_player_html = """
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>📹 {{ video_info.filename }} - Piège Photo Jura</title>
-    <style>
-        * {
-            box-sizing: border-box;
-        }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            margin: 0;
-            padding: 10px;
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            font-size: 14px;
-        }
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-            overflow: hidden;
-        }
-        .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 15px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .header h1 {
-            margin: 0;
-            font-size: 1.4em;
-        }
-        .back-btn {
-            color: white;
-            text-decoration: none;
-            padding: 8px 16px;
-            border: 1px solid rgba(255,255,255,0.3);
-            border-radius: 6px;
-            transition: background 0.2s;
-        }
-        .back-btn:hover {
-            background: rgba(255,255,255,0.1);
-            color: white;
-            text-decoration: none;
-        }
-        .video-container {
-            position: relative;
-            background: #000;
-            border-radius: 8px;
-            overflow: hidden;
-            margin: 15px;
-        }
-        .video-player {
-            width: 100%;
-            height: auto;
-            max-height: 60vh;
-            display: block;
-        }
-        .video-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            pointer-events: none;
-        }
-        .detection-box {
-            position: absolute;
-            border: 2px solid #ff6b6b;
-            background: rgba(255, 107, 107, 0.1);
-            pointer-events: none;
-            border-radius: 4px;
-        }
-        .detection-label {
-            position: absolute;
-            top: -25px;
-            left: 0;
-            background: #ff6b6b;
-            color: white;
-            padding: 2px 8px;
-            font-size: 11px;
-            border-radius: 4px;
-            font-weight: bold;
-        }
-        .video-info {
-            padding: 15px;
-        }
-        .video-title {
-            font-size: 1.2em;
-            font-weight: bold;
-            margin-bottom: 8px;
-        }
-        .video-stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-        .stat-item {
-            background: #f8f9fa;
-            padding: 10px;
-            border-radius: 6px;
-            text-align: center;
-        }
-        .stat-number {
-            font-size: 1.3em;
-            font-weight: bold;
-            color: #667eea;
-        }
-        .stat-label {
-            font-size: 0.8em;
-            color: #666;
-            margin-top: 2px;
-        }
-        .detections-list {
-            margin-top: 20px;
-        }
-        .detection-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 0;
-            border-bottom: 1px solid #eee;
-        }
-        .detection-item:last-child {
-            border-bottom: none;
-        }
-        .animal-type {
-            font-weight: bold;
-            color: #667eea;
-        }
-        .confidence {
-            font-size: 0.9em;
-            color: #666;
-        }
-        .time-marker {
-            font-size: 0.8em;
-            color: #999;
-        }
-        .controls {
-            padding: 20px;
-            background: #f8f9fa;
-            border-top: 1px solid #eee;
-        }
-        .control-btn {
-            padding: 10px 20px;
-            margin: 0 5px;
-            background: #667eea;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-        .control-btn:hover {
-            background: #5a6fd8;
-        }
-        .control-btn:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-        }
-        .timeline {
-            margin: 15px 0;
-        }
-        .timeline-bar {
-            width: 100%;
-            height: 6px;
-            background: #ddd;
-            border-radius: 3px;
-            position: relative;
-            cursor: pointer;
-        }
-        .timeline-progress {
-            height: 100%;
-            background: #667eea;
-            border-radius: 3px;
-            width: 0%;
-        }
-        .detection-markers {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 100%;
-        }
-        .detection-marker {
-            position: absolute;
-            top: -2px;
-            width: 4px;
-            height: 10px;
-            background: #ff6b6b;
-            border-radius: 2px;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h1>📹 {{ video_info.filename }}</h1>
-            <a href="/" class="back-btn">← Retour à la liste</a>
-        </div>
-        
-        <div class="video-container">
-            <video id="videoPlayer" class="video-player" controls preload="metadata">
-                <source src="/stream/{{ filename }}" type="video/mp4">
-                Votre navigateur ne supporte pas la lecture vidéo.
-            </video>
-            <div class="video-overlay" id="videoOverlay"></div>
-        </div>
-        
-        <div class="video-info">
-            <div class="video-title">{{ video_info.filename }}</div>
-            
-            <div class="video-stats">
-                <div class="stat-item">
-                    <div class="stat-number">{{ video_info.detection_count }}</div>
-                    <div class="stat-label">Détections</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-number">{{ "%.1f"|format(video_info.duration) }}s</div>
-                    <div class="stat-label">Durée</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-number">{{ "%.1f"|format(video_info.fps) }}</div>
-                    <div class="stat-label">FPS</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-number">{{ video_info.detections|length }}</div>
-                    <div class="stat-label">Espèces</div>
-                </div>
-            </div>
-            
-            <div class="detections-list">
-                <h3 style="margin: 0 0 10px 0; font-size: 1.1em;">🦌 Détections trouvées :</h3>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 8px;">
-                    {% for detection in video_info.detections %}
-                    <div class="detection-item" data-time="{{ detection.frame_time }}" style="background: #f8f9fa; padding: 8px; border-radius: 6px; border-left: 3px solid #667eea;">
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <div>
-                                <span class="animal-type" style="font-weight: bold; color: #667eea;">{{ detection.class }}</span>
-                                <span class="time-marker" style="font-size: 0.8em; color: #666; margin-left: 5px;">{{ "%.1f"|format(detection.frame_time) }}s</span>
-                            </div>
-                            <div class="confidence" style="background: #e3f2fd; color: #1976d2; padding: 2px 6px; border-radius: 10px; font-size: 0.8em;">{{ "%.0f"|format(detection.confidence * 100) }}%</div>
-                        </div>
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
-        </div>
-        
-        <div class="controls">
-            <button class="control-btn" onclick="jumpToDetection(0)">⏮️ Premier</button>
-            <button class="control-btn" onclick="jumpToDetection(-1)">⏪ Précédent</button>
-            <button class="control-btn" onclick="jumpToDetection(1)">⏩ Suivant</button>
-            <button class="control-btn" onclick="jumpToDetection(-2)">⏭️ Dernier</button>
-            
-            <div class="timeline">
-                <div class="timeline-bar" onclick="seekToTime(event)">
-                    <div class="timeline-progress" id="timelineProgress"></div>
-                    <div class="detection-markers" id="detectionMarkers"></div>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <script>
-        const video = document.getElementById('videoPlayer');
-        const overlay = document.getElementById('videoOverlay');
-        const timelineProgress = document.getElementById('timelineProgress');
-        const detectionMarkers = document.getElementById('detectionMarkers');
-        
-        // Données des détections
-        const detections = {{ video_info.detections | tojson }};
-        let currentDetectionIndex = 0;
-        
-        // Mettre à jour la barre de progression
-        video.addEventListener('timeupdate', function() {
-            const progress = (video.currentTime / video.duration) * 100;
-            timelineProgress.style.width = progress + '%';
-            
-            // Mettre à jour les détections visibles
-            updateDetectionOverlay();
-        });
-        
-        // Créer les marqueurs de détection sur la timeline
-        function createDetectionMarkers() {
-            detections.forEach((detection, index) => {
-                const marker = document.createElement('div');
-                marker.className = 'detection-marker';
-                marker.style.left = (detection.frame_time / {{ video_info.duration }} * 100) + '%';
-                marker.title = `${detection.class} (${Math.round(detection.confidence * 100)}%)`;
-                marker.onclick = (e) => {
-                    e.stopPropagation();
-                    jumpToTime(detection.frame_time);
-                };
-                detectionMarkers.appendChild(marker);
-            });
-        }
-        
-        // Mettre à jour l'overlay des détections
-        function updateDetectionOverlay() {
-            overlay.innerHTML = '';
-            
-            detections.forEach(detection => {
-                const timeDiff = Math.abs(video.currentTime - detection.frame_time);
-                if (timeDiff < 2) { // Afficher les détections dans un rayon de 2 secondes
-                    const box = document.createElement('div');
-                    box.className = 'detection-box';
-                    
-                    // Positionner la boîte (simplifié - en réalité il faudrait les coordonnées exactes)
-                    const bbox = detection.bbox;
-                    box.style.left = (bbox[0] * 100) + '%';
-                    box.style.top = (bbox[1] * 100) + '%';
-                    box.style.width = ((bbox[2] - bbox[0]) * 100) + '%';
-                    box.style.height = ((bbox[3] - bbox[1]) * 100) + '%';
-                    
-                    const label = document.createElement('div');
-                    label.className = 'detection-label';
-                    label.textContent = `${detection.class} (${Math.round(detection.confidence * 100)}%)`;
-                    box.appendChild(label);
-                    
-                    overlay.appendChild(box);
-                }
-            });
-        }
-        
-        // Aller à une détection spécifique
-        function jumpToDetection(direction) {
-            if (direction === 0) {
-                currentDetectionIndex = 0;
-            } else if (direction === -2) {
-                currentDetectionIndex = detections.length - 1;
-            } else {
-                currentDetectionIndex += direction;
-                if (currentDetectionIndex < 0) currentDetectionIndex = 0;
-                if (currentDetectionIndex >= detections.length) currentDetectionIndex = detections.length - 1;
-            }
-            
-            if (detections[currentDetectionIndex]) {
-                jumpToTime(detections[currentDetectionIndex].frame_time);
-            }
-        }
-        
-        // Aller à un temps spécifique
-        function jumpToTime(time) {
-            video.currentTime = time;
-        }
-        
-        // Chercher dans la vidéo en cliquant sur la timeline
-        function seekToTime(event) {
-            const rect = event.currentTarget.getBoundingClientRect();
-            const clickX = event.clientX - rect.left;
-            const percentage = clickX / rect.width;
-            const time = percentage * video.duration;
-            video.currentTime = time;
-        }
-        
-        // Initialiser les marqueurs quand la vidéo est chargée
-        video.addEventListener('loadedmetadata', createDetectionMarkers);
-        
-        // Mettre en surbrillance la détection actuelle dans la liste
-        video.addEventListener('timeupdate', function() {
-            document.querySelectorAll('.detection-item').forEach((item, index) => {
-                const detection = detections[index];
-                if (detection && Math.abs(video.currentTime - detection.frame_time) < 1) {
-                    item.style.background = '#f0f8ff';
-                } else {
-                    item.style.background = 'transparent';
-                }
-            });
-        });
-    </script>
-</body>
-</html>
-    """
-    
-    with open(templates_dir / "video_player.html", 'w', encoding='utf-8') as f:
-        f.write(video_player_html)
 
 def main():
     """Fonction principale"""
@@ -1177,8 +782,10 @@ def main():
     create_templates()
     
     # Mettre à jour l'instance globale avec le dossier vidéo
-    global web_interface, video_streamer
+    global web_interface
     web_interface = WebInterface(video_dir=args.video_dir)
+    
+    # Initialiser le streamer vidéo avec le bon dossier
     video_streamer = VideoStreamer(app, video_dir=args.video_dir)
     
     print(f"🌐 Interface web démarrée sur http://{args.host}:{args.port}")
