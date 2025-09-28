@@ -1,0 +1,73 @@
+# Fichiers générés
+analysis_results.json
+summary.json
+rapport_piege_photo.txt
+
+# Dossiers de modèles
+models/
+checkpoints/
+
+# Cache Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Environnements virtuels
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Fichiers temporaires
+*.tmp
+*.temp
+temp/
+tmp/
+
+# Vidéos (optionnel - décommentez si vous ne voulez pas versionner les vidéos)
+# *.mp4
+# *.avi
+# *.mov
+# *.mkv
+# *.wmv
+
+# Templates générés
+templates/
