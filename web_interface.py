@@ -147,105 +147,239 @@ def create_templates():
     templates_dir = Path("templates")
     templates_dir.mkdir(exist_ok=True)
     
-    # Template principal
+    # Template principal amélioré
     index_html = """
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Analyse Piège Photo</title>
+    <title>🦌 Piège Photo Jura</title>
     <style>
+        * {
+            box-sizing: border-box;
+        }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             margin: 0;
-            padding: 20px;
-            background-color: #f5f5f5;
+            padding: 10px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            font-size: 14px;
+            line-height: 1.4;
         }
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
             background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
             overflow: hidden;
         }
         .header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 30px;
+            padding: 20px;
             text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 1.8em;
+        }
+        .header p {
+            margin: 5px 0 0 0;
+            opacity: 0.9;
         }
         .stats {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            padding: 30px;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+            padding: 15px;
             background: #f8f9fa;
         }
         .stat-card {
             background: white;
-            padding: 20px;
+            padding: 12px;
             border-radius: 8px;
             text-align: center;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+        .stat-card:hover {
+            transform: translateY(-2px);
         }
         .stat-number {
-            font-size: 2em;
+            font-size: 1.5em;
             font-weight: bold;
             color: #667eea;
         }
+        .stat-label {
+            font-size: 0.8em;
+            color: #666;
+            margin-top: 2px;
+        }
         .content {
-            padding: 30px;
+            padding: 15px;
+        }
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            align-items: center;
         }
         .search-bar {
-            margin-bottom: 20px;
+            flex: 1;
+            min-width: 200px;
         }
         .search-bar input {
             width: 100%;
-            padding: 12px;
+            padding: 8px 12px;
             border: 1px solid #ddd;
             border-radius: 6px;
-            font-size: 16px;
+            font-size: 14px;
+        }
+        .filter-bar {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+        .filter-btn {
+            padding: 6px 12px;
+            border: 1px solid #ddd;
+            background: white;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 12px;
+        }
+        .filter-btn:hover, .filter-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+        .timeline-section {
+            margin-bottom: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+        }
+        .timeline-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .timeline-title {
+            font-weight: bold;
+            color: #333;
+        }
+        .timeline-controls {
+            display: flex;
+            gap: 5px;
+        }
+        .timeline-btn {
+            padding: 4px 8px;
+            border: 1px solid #ddd;
+            background: white;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+        }
+        .timeline-btn:hover {
+            background: #667eea;
+            color: white;
+        }
+        .timeline-chart {
+            height: 60px;
+            background: white;
+            border-radius: 4px;
+            position: relative;
+            overflow: hidden;
+        }
+        .timeline-bar {
+            height: 100%;
+            display: flex;
+            align-items: end;
+        }
+        .timeline-hour {
+            flex: 1;
+            border-right: 1px solid #eee;
+            position: relative;
+            min-height: 20px;
+        }
+        .timeline-hour:last-child {
+            border-right: none;
+        }
+        .timeline-detection {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #667eea;
+            border-radius: 2px 2px 0 0;
+            opacity: 0.7;
+        }
+        .timeline-hour-label {
+            position: absolute;
+            top: -20px;
+            left: 0;
+            font-size: 10px;
+            color: #666;
         }
         .video-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 15px;
         }
         .video-card {
             border: 1px solid #ddd;
             border-radius: 8px;
             overflow: hidden;
             background: white;
-            transition: transform 0.2s;
+            transition: all 0.2s;
         }
         .video-card:hover {
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
         .video-header {
-            padding: 15px;
+            padding: 12px;
             background: #f8f9fa;
             border-bottom: 1px solid #ddd;
         }
         .video-name {
             font-weight: bold;
-            margin-bottom: 5px;
+            margin-bottom: 4px;
+            font-size: 13px;
         }
         .video-stats {
-            font-size: 0.9em;
+            font-size: 11px;
             color: #666;
         }
+        .video-thumbnail {
+            margin: 8px 0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .video-thumbnail img {
+            width: 100%;
+            height: 80px;
+            object-fit: cover;
+            transition: transform 0.2s;
+        }
+        .video-thumbnail:hover img {
+            transform: scale(1.05);
+        }
         .detections {
-            padding: 15px;
+            padding: 12px;
         }
         .detection-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 8px 0;
+            padding: 6px 0;
             border-bottom: 1px solid #eee;
+            font-size: 12px;
         }
         .detection-item:last-child {
             border-bottom: none;
@@ -255,8 +389,16 @@ def create_templates():
             color: #667eea;
         }
         .confidence {
-            font-size: 0.8em;
+            font-size: 11px;
             color: #666;
+        }
+        .time-badge {
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 10px;
+            margin-left: 5px;
         }
         .no-data {
             text-align: center;
@@ -326,60 +468,79 @@ def create_templates():
         <div class="stats">
             <div class="stat-card">
                 <div class="stat-number">{{ data.statistics.total_videos }}</div>
-                <div>Vidéos analysées</div>
+                <div class="stat-label">Vidéos</div>
             </div>
             <div class="stat-card">
                 <div class="stat-number">{{ data.statistics.videos_with_detections }}</div>
-                <div>Vidéos avec activité</div>
+                <div class="stat-label">Avec activité</div>
             </div>
             <div class="stat-card">
                 <div class="stat-number">{{ data.statistics.total_detections }}</div>
-                <div>Détections totales</div>
+                <div class="stat-label">Détections</div>
             </div>
             <div class="stat-card">
                 <div class="stat-number">{{ data.statistics.detection_rate }}%</div>
-                <div>Taux de détection</div>
+                <div class="stat-label">Taux</div>
             </div>
         </div>
         
         <div class="content">
-            <div class="search-bar">
-                <input type="text" id="searchInput" placeholder="Rechercher une vidéo...">
+            <div class="controls">
+                <div class="search-bar">
+                    <input type="text" id="searchInput" placeholder="🔍 Rechercher une vidéo...">
+                </div>
+                
+                <div class="filter-bar">
+                    <div class="filter-btn active" data-animal="">Tous</div>
+                    {% for animal, count in data.animal_counts.items() %}
+                    <div class="filter-btn" data-animal="{{ animal }}">{{ animal }} ({{ count }})</div>
+                    {% endfor %}
+                </div>
             </div>
             
-            <div class="filter-bar">
-                <div class="filter-btn active" data-animal="">Tous</div>
-                {% for animal, count in data.animal_counts.items() %}
-                <div class="filter-btn" data-animal="{{ animal }}">{{ animal }} ({{ count }})</div>
-                {% endfor %}
+            <div class="timeline-section">
+                <div class="timeline-header">
+                    <div class="timeline-title">📅 Activité dans le temps</div>
+                    <div class="timeline-controls">
+                        <button class="timeline-btn" onclick="setTimelineView('day')">Jour</button>
+                        <button class="timeline-btn" onclick="setTimelineView('week')">Semaine</button>
+                        <button class="timeline-btn active" onclick="setTimelineView('hour')">Heure</button>
+                    </div>
+                </div>
+                <div class="timeline-chart" id="timelineChart">
+                    <div class="timeline-bar" id="timelineBar">
+                        <!-- Timeline générée par JavaScript -->
+                    </div>
+                </div>
             </div>
             
             <div class="video-grid" id="videoGrid">
                 {% for video in data.all_results %}
                 {% if video.detection_count > 0 %}
-                <div class="video-card" data-filename="{{ video.filename }}">
+                <div class="video-card" data-filename="{{ video.filename }}" data-timestamp="{{ video.analyzed_at }}">
                     <div class="video-header">
                         <div class="video-name">{{ video.filename }}</div>
                         <div class="video-stats">
                             {{ video.detection_count }} détection(s) • {{ "%.1f"|format(video.duration) }}s
                         </div>
                         <div class="video-thumbnail">
-                            <img src="/thumbnail/{{ video.filename }}" alt="Miniature" style="width: 100%; height: 120px; object-fit: cover; border-radius: 4px;">
+                            <img src="/thumbnail/{{ video.filename }}" alt="Miniature">
                         </div>
                     </div>
                     <div class="detections">
-                        {% for detection in video.detections[:5] %}
+                        {% for detection in video.detections[:4] %}
                         <div class="detection-item">
                             <span class="animal-type">{{ detection.class }}</span>
+                            <span class="time-badge">{{ "%.1f"|format(detection.frame_time) }}s</span>
                             <span class="confidence">{{ "%.0f"|format(detection.confidence * 100) }}%</span>
                         </div>
                         {% endfor %}
                         <div class="video-actions">
                             <a href="/video_player/{{ video.filename }}" class="watch-btn">📹 Regarder</a>
                         </div>
-                        {% if video.detections|length > 5 %}
+                        {% if video.detections|length > 4 %}
                         <div class="detection-item">
-                            <span style="color: #666;">... et {{ video.detections|length - 5 }} autres</span>
+                            <span style="color: #666; font-size: 11px;">... et {{ video.detections|length - 4 }} autres</span>
                         </div>
                         {% endif %}
                     </div>
@@ -404,47 +565,148 @@ def create_templates():
     </div>
     
     <script>
-        // Recherche en temps réel
-        document.getElementById('searchInput').addEventListener('input', function(e) {
-            const query = e.target.value.toLowerCase();
-            const cards = document.querySelectorAll('.video-card');
-            
-            cards.forEach(card => {
-                const filename = card.dataset.filename.toLowerCase();
-                if (filename.includes(query)) {
-                    card.style.display = 'block';
-                } else {
-                    card.style.display = 'none';
-                }
-            });
+        // Données globales
+        const videoData = {{ data.all_results | tojson }};
+        let currentTimelineView = 'hour';
+        
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function() {
+            generateTimeline();
+            setupEventListeners();
         });
         
-        // Filtres par animal
-        document.querySelectorAll('.filter-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                // Mettre à jour les boutons actifs
-                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-                this.classList.add('active');
-                
-                const animal = this.dataset.animal;
+        // Recherche en temps réel
+        function setupEventListeners() {
+            document.getElementById('searchInput').addEventListener('input', function(e) {
+                const query = e.target.value.toLowerCase();
                 const cards = document.querySelectorAll('.video-card');
                 
-                if (animal === '') {
-                    // Afficher tous
-                    cards.forEach(card => card.style.display = 'block');
-                } else {
-                    // Filtrer par animal (simulation - en réalité il faudrait une API)
-                    cards.forEach(card => {
-                        const detections = card.querySelectorAll('.animal-type');
-                        let hasAnimal = false;
-                        detections.forEach(det => {
-                            if (det.textContent === animal) {
-                                hasAnimal = true;
-                            }
+                cards.forEach(card => {
+                    const filename = card.dataset.filename.toLowerCase();
+                    if (filename.includes(query)) {
+                        card.style.display = 'block';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+            });
+            
+            // Filtres par animal
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    // Mettre à jour les boutons actifs
+                    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    const animal = this.dataset.animal;
+                    const cards = document.querySelectorAll('.video-card');
+                    
+                    if (animal === '') {
+                        // Afficher tous
+                        cards.forEach(card => card.style.display = 'block');
+                    } else {
+                        // Filtrer par animal
+                        cards.forEach(card => {
+                            const detections = card.querySelectorAll('.animal-type');
+                            let hasAnimal = false;
+                            detections.forEach(det => {
+                                if (det.textContent === animal) {
+                                    hasAnimal = true;
+                                }
+                            });
+                            card.style.display = hasAnimal ? 'block' : 'none';
                         });
-                        card.style.display = hasAnimal ? 'block' : 'none';
-                    });
+                    }
+                });
+            });
+        }
+        
+        // Génération de la timeline
+        function generateTimeline() {
+            const timelineBar = document.getElementById('timelineBar');
+            timelineBar.innerHTML = '';
+            
+            // Grouper les détections par période
+            const timeGroups = groupDetectionsByTime();
+            
+            // Créer les barres de timeline
+            Object.keys(timeGroups).forEach(timeKey => {
+                const hourDiv = document.createElement('div');
+                hourDiv.className = 'timeline-hour';
+                hourDiv.title = `${timeKey}: ${timeGroups[timeKey]} détections`;
+                
+                // Ajouter le label
+                const label = document.createElement('div');
+                label.className = 'timeline-hour-label';
+                label.textContent = timeKey;
+                hourDiv.appendChild(label);
+                
+                // Ajouter la barre de détection
+                if (timeGroups[timeKey] > 0) {
+                    const detectionBar = document.createElement('div');
+                    detectionBar.className = 'timeline-detection';
+                    const height = Math.min(100, (timeGroups[timeKey] / Math.max(...Object.values(timeGroups))) * 100);
+                    detectionBar.style.height = height + '%';
+                    hourDiv.appendChild(detectionBar);
                 }
+                
+                timelineBar.appendChild(hourDiv);
+            });
+        }
+        
+        // Grouper les détections par période
+        function groupDetectionsByTime() {
+            const groups = {};
+            
+            videoData.forEach(video => {
+                if (video.detection_count > 0) {
+                    const date = new Date(video.analyzed_at);
+                    let timeKey;
+                    
+                    switch(currentTimelineView) {
+                        case 'hour':
+                            timeKey = date.getHours() + 'h';
+                            break;
+                        case 'day':
+                            timeKey = date.getDate() + '/' + (date.getMonth() + 1);
+                            break;
+                        case 'week':
+                            const weekStart = new Date(date);
+                            weekStart.setDate(date.getDate() - date.getDay());
+                            timeKey = 'S' + Math.ceil(weekStart.getDate() / 7);
+                            break;
+                    }
+                    
+                    if (!groups[timeKey]) {
+                        groups[timeKey] = 0;
+                    }
+                    groups[timeKey] += video.detection_count;
+                }
+            });
+            
+            return groups;
+        }
+        
+        // Changer la vue de la timeline
+        function setTimelineView(view) {
+            currentTimelineView = view;
+            
+            // Mettre à jour les boutons actifs
+            document.querySelectorAll('.timeline-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // Régénérer la timeline
+            generateTimeline();
+        }
+        
+        // Animation des cartes au survol
+        document.querySelectorAll('.video-card').forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-4px) scale(1.02)';
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0) scale(1)';
             });
         });
     </script>
@@ -505,36 +767,44 @@ def create_templates():
     with open(templates_dir / "error.html", 'w', encoding='utf-8') as f:
         f.write(error_html)
     
-    # Template du lecteur vidéo
+    # Template du lecteur vidéo amélioré
     video_player_html = """
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ video_info.filename }} - Lecteur Vidéo</title>
+    <title>📹 {{ video_info.filename }} - Piège Photo Jura</title>
     <style>
+        * {
+            box-sizing: border-box;
+        }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             margin: 0;
-            padding: 20px;
-            background-color: #f5f5f5;
+            padding: 10px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            font-size: 14px;
         }
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
             background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
             overflow: hidden;
         }
         .header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 20px;
+            padding: 15px 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 1.4em;
         }
         .back-btn {
             color: white;
@@ -552,11 +822,14 @@ def create_templates():
         .video-container {
             position: relative;
             background: #000;
+            border-radius: 8px;
+            overflow: hidden;
+            margin: 15px;
         }
         .video-player {
             width: 100%;
             height: auto;
-            max-height: 70vh;
+            max-height: 60vh;
             display: block;
         }
         .video-overlay {
@@ -572,6 +845,7 @@ def create_templates():
             border: 2px solid #ff6b6b;
             background: rgba(255, 107, 107, 0.1);
             pointer-events: none;
+            border-radius: 4px;
         }
         .detection-label {
             position: absolute;
@@ -580,34 +854,39 @@ def create_templates():
             background: #ff6b6b;
             color: white;
             padding: 2px 8px;
-            font-size: 12px;
+            font-size: 11px;
             border-radius: 4px;
             font-weight: bold;
         }
         .video-info {
-            padding: 20px;
+            padding: 15px;
         }
         .video-title {
-            font-size: 1.5em;
+            font-size: 1.2em;
             font-weight: bold;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
         }
         .video-stats {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 15px;
-            margin-bottom: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 10px;
+            margin-bottom: 15px;
         }
         .stat-item {
             background: #f8f9fa;
-            padding: 15px;
+            padding: 10px;
             border-radius: 6px;
             text-align: center;
         }
         .stat-number {
-            font-size: 1.5em;
+            font-size: 1.3em;
             font-weight: bold;
             color: #667eea;
+        }
+        .stat-label {
+            font-size: 0.8em;
+            color: #666;
+            margin-top: 2px;
         }
         .detections-list {
             margin-top: 20px;
@@ -711,29 +990,37 @@ def create_templates():
             <div class="video-stats">
                 <div class="stat-item">
                     <div class="stat-number">{{ video_info.detection_count }}</div>
-                    <div>Détections</div>
+                    <div class="stat-label">Détections</div>
                 </div>
                 <div class="stat-item">
                     <div class="stat-number">{{ "%.1f"|format(video_info.duration) }}s</div>
-                    <div>Durée</div>
+                    <div class="stat-label">Durée</div>
                 </div>
                 <div class="stat-item">
                     <div class="stat-number">{{ "%.1f"|format(video_info.fps) }}</div>
-                    <div>FPS</div>
+                    <div class="stat-label">FPS</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">{{ video_info.detections|length }}</div>
+                    <div class="stat-label">Espèces</div>
                 </div>
             </div>
             
             <div class="detections-list">
-                <h3>Détections trouvées :</h3>
-                {% for detection in video_info.detections %}
-                <div class="detection-item" data-time="{{ detection.frame_time }}">
-                    <div>
-                        <span class="animal-type">{{ detection.class }}</span>
-                        <span class="time-marker">à {{ "%.1f"|format(detection.frame_time) }}s</span>
+                <h3 style="margin: 0 0 10px 0; font-size: 1.1em;">🦌 Détections trouvées :</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 8px;">
+                    {% for detection in video_info.detections %}
+                    <div class="detection-item" data-time="{{ detection.frame_time }}" style="background: #f8f9fa; padding: 8px; border-radius: 6px; border-left: 3px solid #667eea;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <span class="animal-type" style="font-weight: bold; color: #667eea;">{{ detection.class }}</span>
+                                <span class="time-marker" style="font-size: 0.8em; color: #666; margin-left: 5px;">{{ "%.1f"|format(detection.frame_time) }}s</span>
+                            </div>
+                            <div class="confidence" style="background: #e3f2fd; color: #1976d2; padding: 2px 6px; border-radius: 10px; font-size: 0.8em;">{{ "%.0f"|format(detection.confidence * 100) }}%</div>
+                        </div>
                     </div>
-                    <div class="confidence">{{ "%.0f"|format(detection.confidence * 100) }}%</div>
+                    {% endfor %}
                 </div>
-                {% endfor %}
             </div>
         </div>
         
