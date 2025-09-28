@@ -17,9 +17,10 @@ logger = logging.getLogger(__name__)
 app = Flask(__name__)
 
 class WebInterface:
-    def __init__(self, results_file="analysis_results.json", summary_file="summary.json"):
+    def __init__(self, results_file="analysis_results.json", summary_file="summary.json", video_dir=None):
         self.results_file = results_file
         self.summary_file = summary_file
+        self.video_dir = video_dir
         self.data = self.load_data()
     
     def load_data(self):
@@ -92,17 +93,24 @@ def api_video_info(filename):
 def serve_video(filename):
     """Sert une vidéo spécifique"""
     # Chercher le fichier vidéo dans le dossier des vidéos
-    video_paths = [
+    video_paths = []
+    
+    # Ajouter le dossier vidéo spécifique si défini
+    if web_interface.video_dir:
+        video_paths.append(os.path.join(web_interface.video_dir, filename))
+    
+    # Ajouter les chemins par défaut
+    video_paths.extend([
         f"videos/{filename}",
         f"data/{filename}",
         filename
-    ]
+    ])
     
     for path in video_paths:
         if os.path.exists(path):
             return send_file(path, mimetype='video/mp4')
     
-    return "Vidéo non trouvée", 404
+    return f"Vidéo non trouvée: {filename}", 404
 
 @app.route('/video_player/<filename>')
 def video_player(filename):
@@ -1161,14 +1169,23 @@ def main():
     parser.add_argument("--port", "-p", type=int, default=5000, help="Port du serveur")
     parser.add_argument("--host", default="127.0.0.1", help="Adresse du serveur")
     parser.add_argument("--debug", action="store_true", help="Mode debug")
+    parser.add_argument("--video-dir", "-v", help="Dossier contenant les vidéos")
     
     args = parser.parse_args()
     
     # Créer les templates
     create_templates()
     
+    # Mettre à jour l'instance globale avec le dossier vidéo
+    global web_interface, video_streamer
+    web_interface = WebInterface(video_dir=args.video_dir)
+    video_streamer = VideoStreamer(app, video_dir=args.video_dir)
+    
     print(f"🌐 Interface web démarrée sur http://{args.host}:{args.port}")
-    print("📁 Assurez-vous que vos vidéos sont dans le dossier 'videos/' ou 'data/'")
+    if args.video_dir:
+        print(f"📁 Dossier vidéo: {args.video_dir}")
+    else:
+        print("📁 Recherche des vidéos dans: videos/, data/, ou racine du projet")
     
     app.run(host=args.host, port=args.port, debug=args.debug)
 

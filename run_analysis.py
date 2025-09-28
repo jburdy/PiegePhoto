@@ -91,9 +91,10 @@ def main():
         print("⏹️  Appuyez sur Ctrl+C pour arrêter le serveur")
         
         try:
-            subprocess.run([
-                "python", "web_interface.py", "--port", port
-            ], check=True)
+            cmd = ["python", "web_interface.py", "--port", port]
+            if video_path and os.path.isdir(video_path):
+                cmd.extend(["--video-dir", video_path])
+            subprocess.run(cmd, check=True)
         except KeyboardInterrupt:
             print("\n👋 Interface web arrêtée")
         except subprocess.CalledProcessError as e:

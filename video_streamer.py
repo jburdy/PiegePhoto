@@ -13,9 +13,10 @@ import logging
 logger = logging.getLogger(__name__)
 
 class VideoStreamer:
-    def __init__(self, app):
+    def __init__(self, app, video_dir=None):
         """Initialise le streamer vidéo"""
         self.app = app
+        self.video_dir = video_dir
         self.setup_routes()
     
     def setup_routes(self):
@@ -24,11 +25,18 @@ class VideoStreamer:
         @self.app.route('/stream/<filename>')
         def stream_video(filename):
             """Stream une vidéo avec support du range requests"""
-            video_paths = [
+            video_paths = []
+            
+            # Ajouter le dossier vidéo spécifique si défini
+            if self.video_dir:
+                video_paths.append(os.path.join(self.video_dir, filename))
+            
+            # Ajouter les chemins par défaut
+            video_paths.extend([
                 f"videos/{filename}",
                 f"data/{filename}",
                 filename
-            ]
+            ])
             
             video_path = None
             for path in video_paths:
@@ -44,11 +52,18 @@ class VideoStreamer:
         @self.app.route('/thumbnail/<filename>')
         def get_thumbnail(filename):
             """Génère une miniature de la vidéo"""
-            video_paths = [
+            video_paths = []
+            
+            # Ajouter le dossier vidéo spécifique si défini
+            if self.video_dir:
+                video_paths.append(os.path.join(self.video_dir, filename))
+            
+            # Ajouter les chemins par défaut
+            video_paths.extend([
                 f"videos/{filename}",
                 f"data/{filename}",
                 filename
-            ]
+            ])
             
             video_path = None
             for path in video_paths:
